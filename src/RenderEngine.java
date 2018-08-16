@@ -27,7 +27,7 @@ public class RenderEngine {
     private JPanel renderPanel;
 
     private void initialize() {
-        //posotioning and configuring the window
+        //positioning and configuring the window
         frame.setLayout(new BorderLayout());
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -77,11 +77,22 @@ public class RenderEngine {
                 List<Triangle> tris = new ArrayList<>();
 
                 // creating the 2D objects (Triangle)
-                if(renderObject.equals("Triangle") || renderObject.equals("Circle")) {
-                    tris.add(new Triangle(new Vertex(-100, -100, 0),
-                            new Vertex(100, -100, 0),
-                            new Vertex(0, 100, 0),
-                            Color.WHITE));
+                if(renderObject.equals("Triangle") || renderObject.equals("Square")) {
+                    if(renderObject.equals("Triangle")) {
+                        tris.add(new Triangle(new Vertex(-100, -100, 0),
+                                new Vertex(100, -100, 0),
+                                new Vertex(0, 100, 0),
+                                Color.WHITE));
+                    } else {
+                        tris.add(new Triangle(new Vertex(-100, -100, 0),
+                                new Vertex(-100, 100, 0),
+                                new Vertex(100, -100, 0),
+                                Color.BLUE));
+                        tris.add(new Triangle(new Vertex(100, -100, 0),
+                                new Vertex(100, 100, 0),
+                                new Vertex(-100, 100, 0),
+                                Color.GREEN));
+                    }
 
                     // configuring the render engine to allow 2D transformation
                     xSlider.setVisible(false);
@@ -113,8 +124,8 @@ public class RenderEngine {
                             Color.BLUE));
                 }
 
-                // changing triangle/pyramide to circles and sphere respectively
-                if(renderObject.equals("Circle") || renderObject.equals("Sphere"))
+                // changing pyramid to sphere
+                if(renderObject.equals("Sphere"))
                     for (int i = 0; i < 4; i++)
                             tris = inflate(tris);
 

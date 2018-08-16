@@ -43,7 +43,7 @@ public class ObjectSelector {
         objectSelectLabel.setVisible(true);
 
         // 2D objects to choose from
-        String[] objects2D = new String[] {"Circle", "Triangle"};
+        String[] objects2D = new String[] {"Square", "Triangle"};
         // 3D objects to choose from
         String[] objects3D = new String[] {"Sphere", "Pyramid"};
 
