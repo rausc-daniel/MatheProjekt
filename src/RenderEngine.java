@@ -67,7 +67,7 @@ public class RenderEngine {
         frame.setVisible(true);
     }
 
-    public void render(String renderObject, List<Triangle> preset) {
+    public void render(String renderObject) {
         this.renderObject = renderObject;
 
         initialize();

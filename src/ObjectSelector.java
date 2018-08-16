@@ -78,7 +78,7 @@ public class ObjectSelector {
         // when the button is clicked the render window is created
         submitButton.addActionListener(e -> {
             // prerendering object
-            new RenderEngine().render((String) objectSelect.getSelectedItem(), null);
+            new RenderEngine().render((String) objectSelect.getSelectedItem());
             // creating the window
             frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
         });
