@@ -26,6 +26,8 @@ public class RenderEngine {
     // panel that renders the object
     private JPanel renderPanel;
 
+    private String renderObject;
+
     private void initialize() {
         //positioning and configuring the window
         frame.setLayout(new BorderLayout());
@@ -39,6 +41,9 @@ public class RenderEngine {
             ySlider.setValue(transformationSelect.getSelectedItem() == "Scale" ? -33 : 0);
             zSlider.setValue(transformationSelect.getSelectedItem() == "Scale" ? -33 : 0);
             renderPanel.repaint();
+
+            // replace the slider to accommodate the missing dimension
+            replaceSlider();
         });
 
         // adding and configuring components
@@ -63,9 +68,12 @@ public class RenderEngine {
     }
 
     public void render(String renderObject) {
+        this.renderObject = renderObject;
+
         initialize();
 
-        if(renderPanel != null) frame.remove(renderPanel);
+        // reposition slider to accommodate the missing dimension
+        replaceSlider();
 
         // panel to display render results
         renderPanel = new JPanel() {
@@ -95,15 +103,6 @@ public class RenderEngine {
                     }
 
                     // configuring the render engine to allow 2D transformation
-                    xSlider.setVisible(false);
-                    ySlider.setVisible(false);
-                    zSlider.setVisible(false);
-                    pane.remove(xSlider);
-                    pane.remove(ySlider);
-                    pane.remove(zSlider);
-                    zSlider.setVisible(true);
-                    pane.add(zSlider, BorderLayout.CENTER);
-                    frame.validate();
                 } else {
                     // creating the 3D objects (Pyramid)
                     tris.add(new Triangle(new Vertex(100, 100, 100),
@@ -135,29 +134,29 @@ public class RenderEngine {
 
                 // creating translation matrices
                 if(transformationSelect.getSelectedItem() == "Translate") {
-//                    double xTranslation = Math.toRadians(xSlider.getValue());
-//                    xTransform = new Matrix3(new double[]{
-//                            xTranslation, 0, 0,
-//                            0, 0, 0,
-//                            0, 0, 0
-//                    });
-//
-//                    double yTranslation = Math.toRadians(ySlider.getValue());
-//                    yTransform = new Matrix3(new double[]{
-//                            0,0,0,
-//                            0, yTranslation, 0,
-//                            0,0,0
-//                    });
-//
-//                    double zTranslation = Math.toRadians(zSlider.getValue());
-//                    zTransform = new Matrix3(new double[]{
-//                            0,0,0,
-//                            0,0,0,
-//                            0, 0, zTranslation,
-//                    });
-//
+                    double xTranslation = Math.toRadians(xSlider.getValue());
+                    xTransform = new Matrix3(new double[]{
+                            1, 0, 0,
+                            xTranslation, 1, 0,
+                            xTranslation, 0, 1
+                    });
+
+                    double yTranslation = Math.toRadians(ySlider.getValue());
+                    yTransform = new Matrix3(new double[]{
+                            1, yTranslation, 0,
+                            0, 1, 0,
+                            0, yTranslation, 1
+                    });
+
+                    double zTranslation = Math.toRadians(zSlider.getValue());
+                    zTransform = new Matrix3(new double[]{
+                            1, 0, zTranslation,
+                            0, 1, zTranslation,
+                            0, 0, 1
+                    });
+
                     // combining matrices for each axis to one (makes the calculation shorter)
-//                    transform = xTransform.add(yTransform).add(zTransform);
+                    transform = xTransform.add(yTransform).add(zTransform);
 
                     } else if(transformationSelect.getSelectedItem() == "Scale") {
                     // creating scaling matrices
@@ -322,5 +321,31 @@ public class RenderEngine {
             }
         }
         return result;
+    }
+
+    private void replaceSlider() {
+        if(is2D()) {
+            xSlider.setVisible(false);
+            ySlider.setVisible(false);
+            zSlider.setVisible(false);
+            pane.remove(xSlider);
+            pane.remove(ySlider);
+            pane.remove(zSlider);
+            if(transformationSelect.getSelectedItem() == "Translate" || transformationSelect.getSelectedItem() == "Scale"){
+                xSlider.setVisible(true);
+                ySlider.setVisible(true);
+                pane.add(xSlider, BorderLayout.WEST);
+                pane.add(ySlider, BorderLayout.EAST);
+            } else if (transformationSelect.getSelectedItem() == "Rotate") {
+                zSlider.setVisible(true);
+                pane.add(zSlider, BorderLayout.CENTER);
+            }
+        }
+        frame.validate();
+    }
+
+    private boolean is2D() {
+        if(renderObject == "Square" || renderObject == "Triangle") return true;
+        return false;
     }
 }
