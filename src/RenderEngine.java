@@ -27,7 +27,7 @@ public class RenderEngine {
     private JPanel renderPanel;
 
     private void initialize() {
-        //posotioning and configuring the window
+        //positioning and configuring the window
         frame.setLayout(new BorderLayout());
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
