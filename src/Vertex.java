@@ -8,4 +8,8 @@ public class Vertex {
         this.y = y;
         this.z = z;
     }
+
+    public double[] getPoints() {
+        return new double[] {x, y, z};
+    }
 }

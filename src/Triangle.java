@@ -12,4 +12,8 @@ public class Triangle {
         this.v3 = v3;
         this.color = color;
     }
+
+    public Vertex[] getVertices (){
+        return new Vertex[] {v1, v2, v3};
+    }
 }

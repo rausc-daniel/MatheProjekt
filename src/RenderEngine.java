@@ -21,7 +21,7 @@ public class RenderEngine {
     private JSlider zSlider = new JSlider(JSlider.VERTICAL, -180, 180, 0);
 
     // operation selection
-    private final JComboBox<String> transformationSelect = new JComboBox<>(new String[] {"Translate", "Rotate", "Scale"});
+    private final JComboBox<String> transformationSelect = new JComboBox<>(new String[] {"Translate", "Rotate", "Scale", "Shear"});
 
     // panel that renders the object
     private JPanel renderPanel;
@@ -40,7 +40,6 @@ public class RenderEngine {
             xSlider.setValue(transformationSelect.getSelectedItem() == "Scale" ? -33 : 0);
             ySlider.setValue(transformationSelect.getSelectedItem() == "Scale" ? -33 : 0);
             zSlider.setValue(transformationSelect.getSelectedItem() == "Scale" ? -33 : 0);
-            renderPanel.repaint();
 
             // replace the slider to accommodate the missing dimension
             replaceSlider();
@@ -59,6 +58,7 @@ public class RenderEngine {
         pane.add(ySlider, BorderLayout.CENTER);
         pane.add(zSlider, BorderLayout.EAST);
 
+        //
         xSlider.addChangeListener(e -> renderPanel.repaint());
         ySlider.addChangeListener(e -> renderPanel.repaint());
         zSlider.addChangeListener(e -> renderPanel.repaint());
@@ -67,7 +67,7 @@ public class RenderEngine {
         frame.setVisible(true);
     }
 
-    public void render(String renderObject) {
+    public void render(String renderObject, List<Triangle> preset) {
         this.renderObject = renderObject;
 
         initialize();
@@ -85,8 +85,8 @@ public class RenderEngine {
                 List<Triangle> tris = new ArrayList<>();
 
                 // creating the 2D objects (Triangle)
-                if(renderObject.equals("Triangle") || renderObject.equals("Square")) {
-                    if(renderObject.equals("Triangle")) {
+                if (renderObject.equals("Triangle") || renderObject.equals("Square")) {
+                    if (renderObject.equals("Triangle")) {
                         tris.add(new Triangle(new Vertex(-100, -100, 0),
                                 new Vertex(100, -100, 0),
                                 new Vertex(0, 100, 0),
@@ -123,10 +123,10 @@ public class RenderEngine {
                             Color.BLUE));
                 }
 
-                // changing pyramid to sphere
-                if(renderObject.equals("Sphere"))
+                    // changing pyramid to sphere
+                if (renderObject.equals("Sphere"))
                     for (int i = 0; i < 4; i++)
-                            tris = inflate(tris);
+                        tris = inflate(tris);
 
                 // declaring transformation matrices
                 Matrix3 transform = new Matrix3(new double[] {1, 0, 0, 0, 1, 0, 0, 0, 1});
@@ -134,29 +134,49 @@ public class RenderEngine {
 
                 // creating translation matrices
                 if(transformationSelect.getSelectedItem() == "Translate") {
-                    double xTranslation = Math.toRadians(xSlider.getValue());
+                    double xTranslate = xSlider.getValue();
+                    double yTranslate = ySlider.getValue();
+
+                    for(Triangle tri : tris) {
+                        for(Vertex ver : tri.getVertices()) {
+                            ver.x += xTranslate;
+                            ver.y += yTranslate;
+                        }
+                    }
+
+                    double zTranslate = Math.toRadians(zSlider.getValue() + 90);
+                    zTransform = new Matrix3(new double[]{
+                            zTranslate, 0, 0,
+                            0, zTranslate, 0,
+                            0, 0, zTranslate,
+                    });
+
+                    transform = zTransform;
+
+                } else if(transformationSelect.getSelectedItem() == "Shear") {
+                    double xShear = Math.toRadians(xSlider.getValue());
                     xTransform = new Matrix3(new double[]{
                             1, 0, 0,
-                            xTranslation, 1, 0,
-                            xTranslation, 0, 1
+                            xShear, 1, 0,
+                            xShear, 0, 1
                     });
 
-                    double yTranslation = Math.toRadians(ySlider.getValue());
+                    double yShear = Math.toRadians(ySlider.getValue());
                     yTransform = new Matrix3(new double[]{
-                            1, yTranslation, 0,
+                            1, yShear, 0,
                             0, 1, 0,
-                            0, yTranslation, 1
+                            0, yShear, 1
                     });
 
-                    double zTranslation = Math.toRadians(zSlider.getValue());
+                    double zShear = Math.toRadians(zSlider.getValue());
                     zTransform = new Matrix3(new double[]{
-                            1, 0, zTranslation,
-                            0, 1, zTranslation,
+                            1, 0, zShear,
+                            0, 1, zShear,
                             0, 0, 1
                     });
 
                     // combining matrices for each axis to one (makes the calculation shorter)
-                    transform = xTransform.add(yTransform).add(zTransform);
+                    transform = xTransform.multiply(yTransform).multiply(zTransform);
 
                     } else if(transformationSelect.getSelectedItem() == "Scale") {
                     // creating scaling matrices
@@ -210,20 +230,14 @@ public class RenderEngine {
                     transform = xTransform.multiply(yTransform).multiply(zTransform);
                 }
 
-
-                // TODO: was?
                 BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
 
-                // TODO: warum?
                 double[] zBuffer = new double[img.getWidth() * img.getHeight()];
 
                 // initialize array with extremely far away depths
-                // TODO: warun?
                 for (int q = 0; q < zBuffer.length; q++) {
                     zBuffer[q] = Double.NEGATIVE_INFINITY;
                 }
-
-                // TODO: was passiert hier
                 for (Triangle t : tris) {
                     Vertex v1 = transform.transform(t.v1);
                     v1.x += getWidth() / 2;
@@ -287,7 +301,6 @@ public class RenderEngine {
     }
 
     // coloring in triangles
-    // TODO: wie
     private static Color getShade(Color color, double shade) {
         double redLinear = Math.pow(color.getRed(), 2.4) * shade;
         double greenLinear = Math.pow(color.getGreen(), 2.4) * shade;
@@ -300,7 +313,8 @@ public class RenderEngine {
         return new Color(red, green, blue);
     }
 
-    // TODO: lesen wie das funktioniert
+    // subdividing each triangle
+    // "inflating" ?
     private static List<Triangle> inflate(List<Triangle> tris) {
         List<Triangle> result = new ArrayList<>();
         for (Triangle t : tris) {
@@ -331,7 +345,7 @@ public class RenderEngine {
             pane.remove(xSlider);
             pane.remove(ySlider);
             pane.remove(zSlider);
-            if(transformationSelect.getSelectedItem() == "Translate" || transformationSelect.getSelectedItem() == "Scale"){
+            if(transformationSelect.getSelectedItem() == "Shear" || transformationSelect.getSelectedItem() == "Scale" || transformationSelect.getSelectedItem() == "Translate"){
                 xSlider.setVisible(true);
                 ySlider.setVisible(true);
                 pane.add(xSlider, BorderLayout.WEST);
